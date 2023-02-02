@@ -5,7 +5,7 @@
 ## 本地部署
 
 ```bash
-git clone https://github.com/xlcodes/bookmark-export-by-google
+git clone https://github.com/xlcodes/bookmark-export-by-google.git
 
 yarn 
 ## npm install

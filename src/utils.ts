@@ -1,12 +1,18 @@
+interface ITemp {
+    web: { title: string, logo: string, url: string }[]
+    name: string | null
+    children: ITemp[]
+}
+
 /**
  * 把 String 转换为 DOM 对象
  * @param str
  * @returns {NodeListOf<ChildNode>}
  */
 export const parseToDOM = (str: string) => {
-  const div = document.createElement("div");
-  div.innerHTML = str;
-  return div.childNodes;
+    const div = document.createElement("div");
+    div.innerHTML = str;
+    return div.childNodes;
 };
 
 /**
@@ -14,36 +20,36 @@ export const parseToDOM = (str: string) => {
  * @param dl
  * @param temp
  */
-export const textHandle = (dl: any, temp: any) => {
-  const dts = getDts(dl);
-  if (dts.length > 0) {
-    for (const i in dts) {
-      const dt = dts[i];
-      const hdl = getTag(dt, "DL");
-      if (hdl !== null) {
-        const h = getTag(dt, "H3");
-        const returns = textHandle(hdl, {
-          name: h.textContent,
-          children: [],
-          web: [],
-        });
-        if (temp === null) {
-          temp = returns;
-        } else {
-          temp.children.push(returns);
+export const textHandle = (dl: HTMLDListElement, temp: ITemp | null) => {
+    const dts = getDts(dl);
+    if (dts.length > 0) {
+        for (const i in dts) {
+            const dt = dts[i];
+            const hdl = getTag(dt, "DL");
+            if (hdl !== null) {
+                const h = getTag(dt, "H3") as HTMLHeadingElement;
+                const returns = textHandle(hdl as HTMLDListElement, {
+                    name: h.textContent,
+                    children: [],
+                    web: [],
+                });
+                if (temp === null) {
+                    temp = returns;
+                } else if (returns) {
+                    temp.children.push(returns);
+                }
+            } else {
+                const a = getTag(dt, "A") as HTMLAnchorElement;
+                temp &&
+                temp.web.push({
+                    url: a.href,
+                    title: a.textContent as string,
+                    logo: a.getAttribute("ICON") as string,
+                });
+            }
         }
-      } else {
-        const a = getTag(dt, "A");
-        temp &&
-          temp.web.push({
-            url: a.href,
-            title: a.textContent,
-            logo: a.getAttribute("ICON"),
-          });
-      }
     }
-  }
-  return temp;
+    return temp;
 };
 
 /**
@@ -51,20 +57,20 @@ export const textHandle = (dl: any, temp: any) => {
  * @param dl
  * @returns
  */
-const getDts = (dl: any) => {
-  const dlcs = dl.children;
-  const arr: any = [];
-  if (dlcs.length < 1) {
-    return arr;
-  }
-
-  for (const dlc of dlcs) {
-    if (dlc.nodeName.toUpperCase() === "DT") {
-      arr.push(dlc);
+const getDts = (dl: HTMLDListElement) => {
+    const dlcs = dl.children;
+    const arr: any = [];
+    if (dlcs.length < 1) {
+        return arr;
     }
-  }
 
-  return arr;
+    for (const dlc of dlcs) {
+        if (dlc.nodeName.toUpperCase() === "DT") {
+            arr.push(dlc);
+        }
+    }
+
+    return arr;
 };
 
 /**
@@ -73,29 +79,34 @@ const getDts = (dl: any) => {
  * @param nodeName
  * @returns
  */
-const getTag = (dt: any, nodeName: string) => {
-  const dtcs = dt.children;
-  let obj = null;
-  if (dtcs.length < 1) {
-    return obj;
-  }
-
-  for (const dtc of dtcs) {
-    if (dtc.nodeName.toUpperCase() === nodeName) {
-      obj = dtc;
-      break;
+const getTag = (dt: HTMLElement, nodeName: string) => {
+    const dtcs = dt.children;
+    let obj = null;
+    if (dtcs.length < 1) {
+        return obj;
     }
-  }
-  return obj;
+
+    for (const dtc of dtcs) {
+        if (dtc.nodeName.toUpperCase() === nodeName) {
+            obj = dtc;
+            break;
+        }
+    }
+    return obj;
 };
 
+/**
+ * 复制文本到剪切板
+ * @param text
+ * @param callback
+ */
 export const copy = (text: string, callback: () => void) => {
-  const textArea = document.createElement("textarea");
-  textArea.setAttribute("readonly", "readonly");
-  textArea.value = text;
-  document.body.appendChild(textArea);
-  textArea.select();
-  const res = document.execCommand("Copy");
-  document.body.removeChild(textArea);
-  res && callback();
+    const textArea = document.createElement("textarea");
+    textArea.setAttribute("readonly", "readonly");
+    textArea.value = text;
+    document.body.appendChild(textArea);
+    textArea.select();
+    const res = document.execCommand("Copy");
+    document.body.removeChild(textArea);
+    res && callback();
 };

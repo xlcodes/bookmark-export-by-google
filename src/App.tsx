@@ -18,9 +18,6 @@ const App: React.FC = () => {
     showUploadList: false,
     onChange(info) {
       setLoading(false);
-      if (info.file.status !== "uploading") {
-        console.log(info.file, info.fileList);
-      }
       const reader = new FileReader();
       reader.readAsText(info.file as any);
       reader.onload = () => {
@@ -29,7 +26,8 @@ const App: React.FC = () => {
           for (const dom of doms) {
             // 从 dom 对象中获取 DL 标签
             if (dom.nodeName === "DL") {
-              const result = textHandle(dom, null);
+              const result = textHandle(dom as HTMLDListElement, null);
+              // @ts-ignore
               setJson(result);
               setLoading(true);
               copy(JSON.stringify(result), () => {
